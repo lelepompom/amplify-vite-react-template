@@ -8,7 +8,7 @@ const App: React.FC = () => {
     <div className="App">
       <h1>Invoices</h1>
       <StorageManager
-        acceptedFileTypes={['*']}
+        acceptedFileTypes={['.pdf']}
         path="invoices/"
         autoUpload={false}
         maxFileCount={1}
