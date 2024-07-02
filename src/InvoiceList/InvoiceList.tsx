@@ -1,46 +1,53 @@
 import React, { useState } from 'react';
-import { list, ListPaginateWithPathOutput } from 'aws-amplify/storage';
+import { list, ListPaginateWithPathOutput, getUrl } from 'aws-amplify/storage';
 import { Button, Loader, Accordion } from '@aws-amplify/ui-react';
 
 
 const InvoiceList: React.FC = () => {
     const [showLoader, setShowLoader] = useState(false);
     const [showAccordion, setShowAccordion] = useState(false);
-    const [accordionData, setAccordionData] = useState<{trigger: React.ReactNode;content: React.ReactNode;value: string | undefined;}[]>();
+    const [accordionData, setAccordionData] = useState<{ trigger: React.ReactNode; content: React.ReactNode; value: string | undefined; }[]>()
 
-    let accordeinItems: {
+    let accordionItems: {
         trigger: React.ReactNode;
         content: React.ReactNode;
         value: string | undefined;
     }[] = [];
 
     function initAccordion(list: ListPaginateWithPathOutput) {
-        list.items.forEach(item => {
+        list.items.forEach(async item => {
             if (item.size && item.size > 0) {
-                accordeinItems.push({
+                const linkToStorageFile = await getUrl({
+                    path: item.path,
+                    // Alternatively, path: ({identityId}) => `album/{identityId}/1.jpg`
+                    // options: {
+                    //   validateObjectExistence?: false,  // defaults to false
+                    //   expiresIn?: 20, // validity of the URL, in seconds. defaults to 900 (15 minutes) and maxes at 3600 (1 hour)
+                    //   useAccelerateEndpoint: true // Whether to use accelerate endpoint.
+                    // }
+                });
+                accordionItems.push({
                     trigger: item.path,
-                    value: 'content',
-                    content: 'aaaaa'
+                    value: item.path,
+                    content: <a href={linkToStorageFile.url.toString()} target="_blank" rel="noreferrer">{item.path}</a>
                 });
             }
         });
-        setAccordionData(accordeinItems)
+        setAccordionData(accordionItems)
     }
 
-    function listInvoices() {
-        async () => {
-            setShowLoader(true)
-            try {
-                const ListBucketResult = await list({
-                    path: 'invoices/',
-                    // Alternatively, path: ({identityId}) => `album/{identityId}/photos/`
-                });
-                initAccordion(ListBucketResult)
-                setShowLoader(false)
-                setShowAccordion(true)
-            } catch (error) {
-                console.log(error);
-            }
+    async function listInvoices() {
+        setShowLoader(true)
+        try {
+            const ListBucketResult = await list({
+                path: 'invoices/',
+                // Alternatively, path: ({identityId}) => `album/{identityId}/photos/`
+            });
+            initAccordion(ListBucketResult)
+            setShowLoader(false)
+            setShowAccordion(true)
+        } catch (error) {
+            console.log(error);
         }
     }
 
@@ -51,7 +58,7 @@ const InvoiceList: React.FC = () => {
             {showLoader && <Loader variation="linear" />}
             {showAccordion && (
                 <div>
-                    <Accordion items={accordionData}/>
+                    <Accordion items={accordionData} />
                     <Button variation="link" loadingText="" onClick={() => setShowAccordion(false)}>Hide invoices</Button>
                 </div>
             )}
