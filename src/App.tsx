@@ -6,7 +6,11 @@ import InvoiceList from './InvoiceList/InvoiceList'
 
 const App: React.FC = () => {
   const [isFileUploaded, setIsFileUploaded] = useState(false);
-  const [isTextReady, setIsTextReady] = useState(false);
+  const [isTextReady, setIsTextReady] = useState(true);
+
+  function processInvoice() {
+    setIsTextReady(!isTextReady)
+  }
 
   return (
     <div className="App">
@@ -29,7 +33,7 @@ const App: React.FC = () => {
         variation="primary"
         size="small"
         loadingText="processing invoice"
-        onClick={() => alert('hello')}
+        onClick={() => processInvoice()}
       >
         Start processing invoice
       </Button>
